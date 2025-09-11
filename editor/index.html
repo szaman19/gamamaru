@@ -4,194 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM Text Editor</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh;
-            background: #1a1a1a;
-            color: #ffffff;
-            overflow: hidden;
-        }
-
-        .container {
-            display: flex;
-            height: 100vh;
-            gap: 2px;
-        }
-
-        .panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #2d2d2d;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .panel-header {
-            background: #3d3d3d;
-            padding: 12px 16px;
-            border-bottom: 1px solid #4d4d4d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-title {
-            font-weight: 600;
-            font-size: 14px;
-            color: #e0e0e0;
-        }
-
-        .generate-btn {
-            background: #0078d4;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .generate-btn:hover {
-            background: #106ebe;
-            transform: translateY(-1px);
-        }
-
-        .generate-btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .panel-content {
-            flex: 1;
-            padding: 16px;
-            overflow: auto;
-        }
-
-        .text-editor {
-            width: 100%;
-            height: 100%;
-            background: #1e1e1e;
-            border: 1px solid #404040;
-            border-radius: 4px;
-            padding: 16px;
-            color: #ffffff;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            resize: none;
-            outline: none;
-        }
-
-        .text-editor:focus {
-            border-color: #0078d4;
-            box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
-        }
-
-        .result-area {
-            height: 100%;
-            background: #1e1e1e;
-            border: 1px solid #404040;
-            border-radius: 4px;
-            padding: 16px;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-
-        .loading {
-            color: #888;
-            font-style: italic;
-        }
-
-        .error {
-            color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.1);
-            padding: 12px;
-            border-radius: 4px;
-            border-left: 4px solid #ff6b6b;
-        }
-
-        .empty-state {
-            color: #888;
-            text-align: center;
-            margin-top: 40px;
-            font-style: italic;
-        }
-
-        .status-bar {
-            background: #3d3d3d;
-            padding: 8px 16px;
-            border-top: 1px solid #4d4d4d;
-            font-size: 12px;
-            color: #aaa;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'editor-bg': '#0d1117',
+                        'editor-surface': '#161b22',
+                        'editor-border': '#30363d',
+                        'editor-text': '#f0f6fc',
+                        'editor-muted': '#8b949e'
+                    }
+                }
             }
         }
-    </style>
+    </script>
 </head>
-<body>
-    <div class="container">
+<body class="bg-editor-bg text-editor-text font-sans">
+    <div class="flex h-screen gap-1 p-1">
         <!-- Left Panel - Text Editor -->
-        <div class="panel">
-            <div class="panel-header">
-                <span class="panel-title">Text Editor</span>
-                <button class="generate-btn" onclick="generateText()" id="generateBtn">
-                    Generate
+        <div class="flex-1 flex flex-col bg-editor-surface rounded-lg border border-editor-border overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-4 py-3 bg-editor-surface border-b border-editor-border">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span class="ml-3 text-sm font-medium text-editor-text">Input Text</span>
+                </div>
+                <button 
+                    onclick="generateText()" 
+                    id="generateBtn"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-editor-surface disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        Generate
+                    </span>
                 </button>
             </div>
-            <div class="panel-content">
+            
+            <!-- Editor Content -->
+            <div class="flex-1 p-4">
                 <textarea 
-                    class="text-editor" 
-                    id="textEditor" 
-                    placeholder="Enter your text here..."
+                    id="textEditor"
+                    class="w-full h-full bg-editor-bg border border-editor-border rounded-lg p-4 text-editor-text font-mono text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-editor-muted"
+                    placeholder="Enter your text here to generate LLM responses..."
                     spellcheck="false"
                 ></textarea>
             </div>
-            <div class="status-bar">
-                <span id="charCount">0 characters</span>
-                <span>Ready</span>
+            
+            <!-- Status Bar -->
+            <div class="flex items-center justify-between px-4 py-2 bg-editor-surface border-t border-editor-border text-xs text-editor-muted">
+                <span id="charCount" class="flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    0 characters
+                </span>
+                <span class="flex items-center gap-1">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    Ready • Ctrl+Enter to generate
+                </span>
             </div>
         </div>
 
         <!-- Right Panel - Generation Result -->
-        <div class="panel">
-            <div class="panel-header">
-                <span class="panel-title">LLM Generation Result</span>
-                <button class="generate-btn" onclick="clearResult()" style="background: #666;">
-                    Clear
+        <div class="flex-1 flex flex-col bg-editor-surface rounded-lg border border-editor-border overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-4 py-3 bg-editor-surface border-b border-editor-border">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-pink-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span class="ml-3 text-sm font-medium text-editor-text">Generated Output</span>
+                </div>
+                <button 
+                    onclick="clearResult()"
+                    class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-editor-surface"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
                 </button>
             </div>
-            <div class="panel-content">
-                <div class="result-area" id="resultArea">
-                    <div class="empty-state">
-                        Generated text will appear here...
+            
+            <!-- Result Content -->
+            <div class="flex-1 p-4 overflow-auto">
+                <div id="resultArea" class="h-full bg-editor-bg border border-editor-border rounded-lg p-4 text-editor-text text-sm leading-relaxed whitespace-pre-wrap">
+                    <div class="flex flex-col items-center justify-center h-full text-editor-muted">
+                        <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <p class="text-center">Generated text will appear here...</p>
+                        <p class="text-xs mt-2 opacity-75">Enter text on the left and click Generate</p>
                     </div>
                 </div>
             </div>
-            <div class="status-bar">
-                <span id="resultStatus">Waiting for generation</span>
-                <span id="timestamp"></span>
+            
+            <!-- Status Bar -->
+            <div class="flex items-center justify-between px-4 py-2 bg-editor-surface border-t border-editor-border text-xs text-editor-muted">
+                <span id="resultStatus" class="flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Waiting for generation
+                </span>
+                <span id="timestamp" class="font-mono"></span>
             </div>
+        </div>
+    </div>
+
+    <!-- Mobile responsive message -->
+    <div class="lg:hidden fixed inset-0 bg-editor-bg flex items-center justify-center p-4">
+        <div class="text-center">
+            <svg class="w-16 h-16 mx-auto mb-4 text-editor-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <h2 class="text-xl font-semibold text-editor-text mb-2">Desktop Required</h2>
+            <p class="text-editor-muted">This editor works best on desktop screens. Please use a larger device for the optimal experience.</p>
         </div>
     </div>
 
@@ -203,10 +137,15 @@
         const resultStatus = document.getElementById('resultStatus');
         const timestamp = document.getElementById('timestamp');
 
-        // Update character count
+        // Update character count with smooth animation
         textEditor.addEventListener('input', () => {
             const count = textEditor.value.length;
-            charCount.textContent = `${count} characters`;
+            charCount.innerHTML = `
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                ${count.toLocaleString()} characters
+            `;
         });
 
         // Handle Ctrl+Enter for quick generation
@@ -227,9 +166,33 @@
 
             // Update UI for loading state
             generateBtn.disabled = true;
-            generateBtn.textContent = 'Generating...';
-            resultArea.innerHTML = '<div class="loading">Generating response...</div>';
-            resultStatus.textContent = 'Generating...';
+            generateBtn.innerHTML = `
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Generating...
+                </span>
+            `;
+            
+            resultArea.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-editor-muted">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                    <p class="text-center">Generating your response...</p>
+                    <p class="text-xs mt-2 opacity-75">This may take a few moments</p>
+                </div>
+            `;
+            
+            resultStatus.innerHTML = `
+                <svg class="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Generating...
+            `;
 
             try {
                 // Make API call to local server
@@ -248,9 +211,17 @@
                 const data = await response.json();
                 const result = data.completed_text;
                 
-                // Display result
-                resultArea.textContent = result;
-                resultStatus.textContent = 'Generation completed';
+                // Display result with fade-in animation
+                resultArea.innerHTML = result;
+                resultArea.classList.add('animate-pulse');
+                setTimeout(() => resultArea.classList.remove('animate-pulse'), 500);
+                
+                resultStatus.innerHTML = `
+                    <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Generation completed
+                `;
                 timestamp.textContent = new Date().toLocaleTimeString();
 
             } catch (error) {
@@ -259,19 +230,56 @@
             } finally {
                 // Reset button state
                 generateBtn.disabled = false;
-                generateBtn.textContent = 'Generate';
+                generateBtn.innerHTML = `
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        Generate
+                    </span>
+                `;
             }
         }
 
         function showError(message) {
-            resultArea.innerHTML = `<div class="error">${message}</div>`;
-            resultStatus.textContent = 'Error occurred';
+            resultArea.innerHTML = `
+                <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4 text-red-300">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="font-medium">Error</span>
+                    </div>
+                    <p class="text-sm leading-relaxed">${message}</p>
+                </div>
+            `;
+            
+            resultStatus.innerHTML = `
+                <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                Error occurred
+            `;
             timestamp.textContent = new Date().toLocaleTimeString();
         }
 
         function clearResult() {
-            resultArea.innerHTML = '<div class="empty-state">Generated text will appear here...</div>';
-            resultStatus.textContent = 'Waiting for generation';
+            resultArea.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-editor-muted">
+                    <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                    <p class="text-center">Generated text will appear here...</p>
+                    <p class="text-xs mt-2 opacity-75">Enter text on the left and click Generate</p>
+                </div>
+            `;
+            
+            resultStatus.innerHTML = `
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Waiting for generation
+            `;
             timestamp.textContent = '';
         }
 
